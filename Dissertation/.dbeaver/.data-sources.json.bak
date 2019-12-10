@@ -1,0 +1,34 @@
+{
+	"folders": {},
+	"connections": {
+		"postgres-jdbc-16dffe9dc60-4963d28fd9e8f82d": {
+			"provider": "postgresql",
+			"driver": "postgres-jdbc",
+			"name": "PostgreSQL - postgres",
+			"save-password": true,
+			"read-only": false,
+			"configuration": {
+				"host": "localhost",
+				"port": "5432",
+				"database": "postgres",
+				"url": "jdbc:postgresql://localhost:5432/postgres",
+				"type": "dev",
+				"provider-properties": {
+					"@dbeaver-show-non-default-db@": "false",
+					"@dbeaver-show-template-db@": "false"
+				},
+				"handlers": {}
+			}
+		}
+	},
+	"connection-types": {
+		"dev": {
+			"name": "Development",
+			"color": "255,255,255",
+			"description": "Regular development database",
+			"auto-commit": true,
+			"confirm-execute": false,
+			"confirm-data-change": false
+		}
+	}
+}

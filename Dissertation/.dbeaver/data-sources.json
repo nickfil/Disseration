@@ -1,0 +1,103 @@
+{
+	"folders": {},
+	"connections": {
+		"postgres-jdbc-16dffe9dc60-4963d28fd9e8f82d": {
+			"provider": "postgresql",
+			"driver": "postgres-jdbc",
+			"name": "PostgreSQL - postgres",
+			"save-password": true,
+			"read-only": false,
+			"configuration": {
+				"host": "localhost",
+				"port": "5432",
+				"database": "postgres",
+				"url": "jdbc:postgresql://localhost:5432/postgres",
+				"type": "dev",
+				"provider-properties": {
+					"@dbeaver-show-non-default-db@": "false",
+					"@dbeaver-show-template-db@": "false"
+				},
+				"handlers": {}
+			}
+		},
+		"postgres-jdbc-16dffeb5a21-30a0aa861799c286": {
+			"provider": "postgresql",
+			"driver": "postgres-jdbc",
+			"name": "PostgreSQL - postgres 2",
+			"save-password": true,
+			"read-only": false,
+			"configuration": {
+				"host": "localhost",
+				"port": "5432",
+				"database": "postgres",
+				"url": "jdbc:postgresql://localhost:5432/postgres",
+				"type": "dev",
+				"properties": {
+					"connectTimeout": "20",
+					"loginTimeout": "20"
+				},
+				"provider-properties": {
+					"@dbeaver-show-non-default-db@": "false",
+					"@dbeaver-show-template-db@": "false"
+				},
+				"handlers": {}
+			}
+		},
+		"postgres-jdbc-16dffed2b5d-341f44250728f9b9": {
+			"provider": "postgresql",
+			"driver": "postgres-jdbc",
+			"name": "PostgreSQL - postgres 3",
+			"save-password": true,
+			"read-only": false,
+			"configuration": {
+				"host": "localhost",
+				"port": "5432",
+				"database": "postgres",
+				"url": "jdbc:postgresql://localhost:5432/postgres",
+				"type": "dev",
+				"properties": {
+					"connectTimeout": "20",
+					"loginTimeout": "20"
+				},
+				"provider-properties": {
+					"@dbeaver-show-non-default-db@": "true",
+					"@dbeaver-show-template-db@": "false"
+				},
+				"handlers": {}
+			}
+		},
+		"postgres-jdbc-16dfff30e2b-78bafdad8472b064": {
+			"provider": "postgresql",
+			"driver": "postgres-jdbc",
+			"name": "PostgreSQL - postgres 4",
+			"save-password": true,
+			"read-only": false,
+			"configuration": {
+				"host": "localhost",
+				"port": "5432",
+				"database": "postgres",
+				"url": "jdbc:postgresql://localhost:5432/postgres",
+				"type": "dev",
+				"properties": {
+					"connectTimeout": "20",
+					"loginTimeout": "20"
+				},
+				"provider-properties": {
+					"@dbeaver-show-non-default-db@": "false",
+					"@dbeaver-show-template-db@": "false"
+				},
+				"handlers": {}
+			}
+		}
+	},
+	"connection-types": {
+		"dev": {
+			"name": "Development",
+			"color": "255,255,255",
+			"description": "Regular development database",
+			"auto-commit": true,
+			"confirm-execute": false,
+			"confirm-data-change": false
+		}
+	}
+}
