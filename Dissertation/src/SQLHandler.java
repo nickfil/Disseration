@@ -1,5 +1,7 @@
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 import javafx.util.Pair;
 
@@ -90,16 +92,16 @@ public class SQLHandler {
 		}
 	}
 	
-	public ArrayList<Pair<String, String>> getQueryResults(ResultSet res) throws SQLException {
+	public Set<String> getQueryResults(ResultSet res) throws SQLException {
 		
-		ArrayList<Pair<String, String>> queryResults = new ArrayList<Pair<String, String>>();
+		Set<String> queryResults = new HashSet<String>();
 		
 		while (res.next()) {
             String key = res.getString("keys");
             String values = res.getString("values");
             
-            Pair<String, String> p = new Pair<String, String>(key, values);
-            queryResults.add(p);
+            //Pair<String, String> p = new Pair<String, String>(key, values);
+            queryResults.add("("+key+","+values+")");
 		}
 		
 		return queryResults;

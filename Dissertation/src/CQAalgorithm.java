@@ -2,6 +2,8 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.sql.*;
+import java.util.Set;
+
 import org.json.*;
 
 
@@ -17,9 +19,10 @@ public class CQAalgorithm {
 		SQLHandler database = new SQLHandler(username, password, "disstester"); //initializing our databse object
 		
 		ResultSet rs = database.query("SELECT * FROM main;");
-		System.out.println(database.getQueryResults(rs));
-		//database.clearDB();
+		Set<String> queryResults = database.getQueryResults(rs);
+		System.out.println(queryResults);
 		
+		//MarkovChain mChain = new MarkovChain();
 		
 	}
 
