@@ -18,7 +18,7 @@ public class SQLHandler {
 		
 		
 		setupConnection();
-		initializeDB();
+		//initializeDB();
 	}
 	
 	private static void setupConnection() {

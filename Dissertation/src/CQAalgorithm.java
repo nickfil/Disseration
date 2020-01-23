@@ -18,7 +18,7 @@ public class CQAalgorithm {
 		
 		ResultSet rs = database.query("SELECT * FROM main;");
 		System.out.println(database.getQueryResults(rs));
-		database.clearDB();
+		//database.clearDB();
 		
 		
 	}
