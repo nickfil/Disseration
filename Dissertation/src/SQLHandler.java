@@ -4,7 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javafx.util.Pair;
-
+//sudo pkill -u postgres
 public class SQLHandler {
 	
 	private static String username;
