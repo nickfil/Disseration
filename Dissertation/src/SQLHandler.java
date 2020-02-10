@@ -100,8 +100,7 @@ public class SQLHandler {
             String key = res.getString("keys");
             String values = res.getString("values");
             
-            //Pair<String, String> p = new Pair<String, String>(key, values);
-            queryResults.add("("+key+","+values+")");
+            queryResults.add(key+","+values);
 		}
 		
 		return queryResults;

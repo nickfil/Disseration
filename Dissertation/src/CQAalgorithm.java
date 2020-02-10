@@ -27,8 +27,8 @@ public class CQAalgorithm {
 		Set<String> databaseInstance = database.getQueryResults(rs);
 		//System.out.println(databaseInstance);
 		
-		double lamda = 0.1;
-		double epsilon = 0.1;
+		double lamda = 0.01;
+		double epsilon = 0.01;
 		double n = (1/(2*Math.pow(epsilon, 2.0))) * Math.log(2/lamda);
 		
 		ArrayList<String> constraintViolating = new ArrayList<String>();
@@ -41,18 +41,16 @@ public class CQAalgorithm {
 			
 			//while the instance is inconsistent
 			while(isInconsistent(currentInstance)) {
-				//get an ArrayList<String> of all inconsistent tuples
-				constraintViolating = violatingConstraintTuples(currentInstance);
+				constraintViolating = violatingConstraintTuples(currentInstance); //get an ArrayList<String> of all inconsistent tuples
 				
-				//choose one of the violations with prop 1/constraintViolating.length
-				tupleToRemove = constraintViolating.get(rand.nextInt(constraintViolating.size()));
-				//update databaseInstance
-				currentInstance.remove(tupleToRemove);
+				tupleToRemove = constraintViolating.get(rand.nextInt(constraintViolating.size())); //choose one of the violations with prop 1/constraintViolating.length
+
+				currentInstance.remove(tupleToRemove); //update databaseInstance
 			}
-			if(currentInstance.contains("(a,b)")) counter++;
+			if(currentInstance.contains("a,b")) counter++;
 		
 		}
-		System.out.println(Double.valueOf(counter)/n);
+		System.out.println("(a, "+String.valueOf(Double.valueOf(counter)/n) +")");
 	}
 
 	public static void auth() throws JSONException, IOException {
@@ -70,11 +68,11 @@ public class CQAalgorithm {
 	public static ArrayList<String> violatingConstraintTuples(Set<String> db){
 
 		ArrayList<String> violations = new ArrayList<String>();
-		Map<Character, Integer> keys = new HashMap<Character, Integer>();
-		char primaryKey;
+		Map<String, Integer> keys = new HashMap<String, Integer>();
+		String primaryKey;
 		
 		for(String tuple : db) {
-			primaryKey = tuple.charAt(1);
+			primaryKey = tuple.split(",")[0];
 			if(keys.containsKey(primaryKey)) {
 				int count = keys.get(primaryKey);
 				count++;
@@ -86,7 +84,7 @@ public class CQAalgorithm {
 		}
 		
 		for(String tuple : db) {
-			primaryKey = tuple.charAt(1);
+			primaryKey = tuple.split(",")[0];
 			if(keys.get(primaryKey)>1) {
 				violations.add(tuple);
 			}
@@ -96,14 +94,14 @@ public class CQAalgorithm {
 	}
 	
 	public static Boolean isInconsistent(Set<String> db) {
-		ArrayList<Character> keys = new ArrayList<Character>();
+		ArrayList<String> keys = new ArrayList<String>();
 		
 		for(String each : db) {
-			if(keys.contains(each.charAt(1))) {
+			if(keys.contains(each.split(",")[0])) {
 				return true;
 			}
 			else {
-				keys.add(each.charAt(1));
+				keys.add(each.split(",")[0]);
 			}
 		}
 		
