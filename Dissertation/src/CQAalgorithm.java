@@ -20,21 +20,18 @@ public class CQAalgorithm {
 	public static void main(String args[]) throws SQLException, JSONException, IOException{	
 		
 		auth();	
-        
 		SQLHandler database = new SQLHandler(username, password, "disstester"); //initializing our databse object
-		
 		ResultSet rs = database.query("SELECT * FROM main;");
 		Set<String> databaseInstance = database.getQueryResults(rs);
-		//System.out.println(databaseInstance);
-		
-		double lamda = 0.01;
-		double epsilon = 0.01;
-		double n = (1/(2*Math.pow(epsilon, 2.0))) * Math.log(2/lamda);
 		
 		ArrayList<String> constraintViolating = new ArrayList<String>();
 		String tupleToRemove = null;
 		Random rand = new Random();
-		int counter = 0;
+		Map<String, Integer> results = new HashMap<String, Integer>();
+		
+		double lamda = 0.01;
+		double epsilon = 0.01;
+		double n = (1/(2*Math.pow(epsilon, 2.0))) * Math.log(2/lamda);
 		
 		for(int i=0; i<n; i++) {
 			Set<String> currentInstance = new HashSet<String>(databaseInstance);
@@ -47,10 +44,12 @@ public class CQAalgorithm {
 
 				currentInstance.remove(tupleToRemove); //update databaseInstance
 			}
-			if(currentInstance.contains("a,b")) counter++;
+			
+			results = updateResultMap(currentInstance, results);
 		
 		}
-		System.out.println("(a, "+String.valueOf(Double.valueOf(counter)/n) +")");
+		
+		printResults(results, n);
 	}
 
 	public static void auth() throws JSONException, IOException {
@@ -106,5 +105,28 @@ public class CQAalgorithm {
 		}
 		
 		return false;
+	}
+	
+	public static Map<String, Integer> updateResultMap(Set<String> db, Map<String, Integer> res){
+		int temp;
+		Map<String, Integer> returnMap = new HashMap<String, Integer>(res);
+		
+		for(String entry : db) {
+			temp = 1;
+			if(returnMap.containsKey(entry)) {
+				temp = returnMap.get(entry)+1;
+				returnMap.put(entry, temp);
+			}
+			else {
+				returnMap.put(entry, 1);
+			}
+		}
+		return returnMap;
+	}
+
+	public static void printResults(Map<String, Integer> toPrint, double iterations) {
+		for(String item : toPrint.keySet()) {
+			System.out.println("(" + item + ") - " +  String.format("%.3f", toPrint.get(item)/iterations));
+		}
 	}
 }
