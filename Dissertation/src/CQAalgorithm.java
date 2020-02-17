@@ -11,8 +11,6 @@ import java.util.Random;
 
 import org.json.*;
 
-
-
 public class CQAalgorithm {
 	private static String username;
 	private static String password;
