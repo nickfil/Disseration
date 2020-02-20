@@ -23,18 +23,17 @@ public class CQAalgorithm {
 	private static final String q2_2 = "SELECT * FROM public_experiment_q2_1_30_2_5.lineitem as lineitem, public_experiment_q2_1_30_2_5.partsupp as partsupp, public_experiment_q2_1_30_2_5.supplier as supplier WHERE lineitem.l_suppkey = partsupp.ps_suppkey AND partsupp.ps_suppkey = supplier.s_suppkey";
 	private static final String q2_3 = "SELECT * FROM public_experiment_q2_1_50_2_5.lineitem as lineitem, public_experiment_q2_1_50_2_5.partsupp as partsupp, public_experiment_q2_1_50_2_5.supplier as supplier WHERE lineitem.l_suppkey = partsupp.ps_suppkey AND partsupp.ps_suppkey = supplier.s_suppkey";
 	private static final String q3_1 = "SELECT * FROM public_experiment_q3_1_10_2_5.lineitem as lineitem, public_experiment_q3_1_10_2_5.orders as orders, public_experiment_q3_1_10_2_5.customer as customer, public_experiment_q3_1_10_2_5.partsupp as partsupp WHERE lineitem.l_orderkey = orders.o_orderkey AND orders.o_custkey = customer.c_custkey AND lineitem.l_suppkey = partsupp.ps_suppkey";
-	private static final String q3_2 = "SELECT * FROM public_experiment_q3_1_30_2_5.lineitem as lineitem, public_experiment_q3_1_30_2_5.orders as orders, public_experiment_q3_1_30_2_5.customer as customer, public_experiment_q3_1_30_2_5.partsupp as partsupp WHERE lineitem.l_orderkey = orders.o_orderkey AND orders.o_custkey = customer.c_custkey AND lineitem.l_suppkey = partsupp.ps_suppkey AND partsupp.ps_availqty = 6700 AND orders.o_orderpriority = '1-URGENT'";
-	private static final String q3_3 = "SELECT * FROM public_experiment_q3_1_50_2_5.lineitem as lineitem, public_experiment_q3_1_50_2_5.orders as orders, public_experiment_q3_1_50_2_5.customer as customer, public_experiment_q3_1_50_2_5.partsupp as partsupp WHERE lineitem.l_orderkey = orders.o_orderkey AND orders.o_custkey = customer.c_custkey AND lineitem.l_suppkey = partsupp.ps_suppkey AND partsupp.ps_availqty = 6700 AND orders.o_orderpriority = '1-URGENT'";
+	private static final String q3_2 = "SELECT * FROM public_experiment_q3_1_30_2_5.lineitem as lineitem, public_experiment_q3_1_30_2_5.orders as orders, public_experiment_q3_1_30_2_5.customer as customer, public_experiment_q3_1_30_2_5.partsupp as partsupp WHERE lineitem.l_orderkey = orders.o_orderkey AND orders.o_custkey = customer.c_custkey AND lineitem.l_suppkey = partsupp.ps_suppkey";
+	private static final String q3_3 = "SELECT * FROM public_experiment_q3_1_50_2_5.lineitem as lineitem, public_experiment_q3_1_50_2_5.orders as orders, public_experiment_q3_1_50_2_5.customer as customer, public_experiment_q3_1_50_2_5.partsupp as partsupp WHERE lineitem.l_orderkey = orders.o_orderkey AND orders.o_custkey = customer.c_custkey AND lineitem.l_suppkey = partsupp.ps_suppkey";
 	
 	public static void main(String args[]) throws SQLException, JSONException, IOException{	
 		
 		auth();	
-		SQLHandler database = new SQLHandler(username, password, "traffic_crashes_chicago"); //initializing our database object
-		ResultSet rs = database.query(q_tcc);
-		//SELECT * FROM crashes WHERE roadway_surface_cond='DRY'
+		SQLHandler database = new SQLHandler(username, password, "out3_3"); //initializing our database object
+		ResultSet rs = database.query(q3_3);
 		ArrayList<String> databaseFirstInstance = database.getQueryResultsTCC(rs);
 		
-//		analyzeDB(databaseFirstInstance);
+		analyzeDB(databaseFirstInstance);
 
 		ArrayList<String> violating = new ArrayList<String>();
 		ArrayList<String> nonViolating = new ArrayList<String>();
@@ -57,7 +56,7 @@ public class CQAalgorithm {
 		double n = (1/(2*Math.pow(epsilon, 2.0))) * Math.log(2/lamda);
 		
 		//original_CQA((int)n, databaseFirstInstance);
-		optimised_CQA((int)n, violating, nonViolating);
+		//optimised_CQA((int)n, violating, nonViolating);
 
 	}
 	
@@ -309,9 +308,24 @@ public class CQAalgorithm {
 		// supplier.s_phone = '26-762-352-2798' AND lineitem.l_shipinstruct = 'NONE'
 		
 		for(String entry : db) {
-			String s_phone = entry.split(",")[22].trim();
+			String s_phone = entry.split(",")[21].trim();
 			String l_shipinstruct = entry.split(",")[12].trim();
 			if(s_phone.equals("'26-762-352-2798'") && l_shipinstruct.equals("'NONE'")) {
+				ret.add(entry);
+			}
+		}
+		
+		return ret;
+	}
+	
+	public static ArrayList<String> query3(ArrayList<String> db){
+		ArrayList<String> ret = new ArrayList<String>();
+		//  AND partsupp.ps_availqty = 6700 AND orders.o_orderpriority = '1-URGENT'
+		
+		for(String entry : db) {
+			String ps_availqty = entry.split(",")[15].trim();
+			String o_orderpriority = entry.split(",")[22].trim();
+			if(ps_availqty.equals("6700") && o_orderpriority.equals("'1-URGENT'")) {
 				ret.add(entry);
 			}
 		}

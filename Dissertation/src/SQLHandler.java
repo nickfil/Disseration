@@ -164,11 +164,10 @@ public class SQLHandler {
             resultList[16] = res.getString("ps_comment"); 
             resultList[17] = res.getString("s_name");
             resultList[18] = res.getString("s_address");
-            resultList[19] = res.getString("l_shipmode");
-            resultList[20] = res.getString("s_nationkey");
-            resultList[21] = res.getString("s_phone");
-            resultList[22] = res.getString("s_acctbal");
-            resultList[23] = res.getString("s_comment");
+            resultList[19] = res.getString("s_nationkey");
+            resultList[20] = res.getString("s_phone");
+            resultList[21] = res.getString("s_acctbal");
+            resultList[22] = res.getString("s_comment");
             
             queryResults.add(String.join("/", key) + "," + String.join(",", resultList));
 		}
@@ -176,6 +175,59 @@ public class SQLHandler {
 		return queryResults;
 	}
 	
+	public ArrayList<String> getQueryResults3(ResultSet res) throws SQLException {
+		
+		ArrayList<String> queryResults = new ArrayList<String>();
+		String[] resultList = new String[31];
+		String[] key = new String[6];
+			
+		while (res.next()) {
+            key[0] = res.getString("l_orderkey");
+            key[1] = res.getString("ps_partkey");
+            key[2] = res.getString("ps_suppkey");
+            key[3] = res.getString("l_linenumber");
+            key[4] = res.getString("o_orderkey");
+            key[5] = res.getString("c_custkey");
+            
+            resultList[0] = res.getString("l_partkey");
+            resultList[1] = res.getString("l_suppkey");
+            resultList[2] = res.getString("l_quantity");
+            resultList[3] = res.getString("l_extendedprice");
+            resultList[4] = res.getString("l_discount");
+            resultList[5] = res.getString("l_tax");
+            resultList[6] = res.getString("l_returnflag");
+            resultList[7] = res.getString("l_linestatus");
+            resultList[8] = res.getString("l_shipdate");
+            resultList[9] = res.getString("l_commitdate");
+            resultList[10] = res.getString("l_receiptdate");
+            resultList[11] = res.getString("l_shipinstruct");
+            resultList[12] = res.getString("l_shipmode");
+            resultList[13] = res.getString("l_comment");
+            resultList[14] = res.getString("ps_availqty");
+            resultList[15] = res.getString("ps_supplycost");
+            resultList[16] = res.getString("ps_comment"); 
+            resultList[17] = res.getString("o_custkey");
+            resultList[18] = res.getString("o_orderstatus");
+            resultList[19] = res.getString("o_totalprice");
+            resultList[20] = res.getString("o_orderdate");
+            resultList[21] = res.getString("o_orderpriority");
+            resultList[22] = res.getString("o_clerk");
+            resultList[23] = res.getString("o_shippriority");
+            resultList[23] = res.getString("o_comment");      
+            resultList[24] = res.getString("c_name");
+            resultList[25] = res.getString("c_address");
+            resultList[26] = res.getString("c_nationkey");
+            resultList[27] = res.getString("c_phone");
+            resultList[28] = res.getString("c_acctbal");
+            resultList[29] = res.getString("c_mktsegment");
+            resultList[30] = res.getString("c_comment"); 
+            
+            queryResults.add(String.join("/", key) + "," + String.join(",", resultList));
+		}
+		
+		return queryResults;
+	}
+
 	public ArrayList<String> getQueryResultsTCC(ResultSet res) throws SQLException {
 		
 		ArrayList<String> queryResults = new ArrayList<String>();
