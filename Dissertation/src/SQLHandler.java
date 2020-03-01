@@ -231,14 +231,14 @@ public class SQLHandler {
 	public ArrayList<String> getQueryResultsTCC(ResultSet res) throws SQLException {
 		
 		ArrayList<String> queryResults = new ArrayList<String>();
-		String[] resultList = new String[20];
+		String[] resultList = new String[22];
 		String[] key = new String[4];
-		
+
 		while (res.next()) {
-            key[0] = res.getString("crash_date");
-            key[1] = res.getString("street_name");
-            key[2] = res.getString("street_no");
-            key[3] = res.getString("street_direction");
+            key[0] = res.getString("street_name");
+            key[1] = res.getString("street_no");
+            key[2] = res.getString("street_direction");
+            key[3] = res.getString("crash_date");
             resultList[0] = res.getString("posted_speed_limit");
             resultList[1] = res.getString("traffic_control_device");
             resultList[2] = res.getString("device_condition");
@@ -259,9 +259,128 @@ public class SQLHandler {
             resultList[17] = res.getString("injuries_reported_not_evident");
             resultList[18] = res.getString("injuries_no_indication");
             resultList[19] = res.getString("injuries_unknown");
+//            resultList[20] = res.getString("latitude");
+//            resultList[11] = res.getString("longitude");
+
   
             queryResults.add(String.join("/", key) + "," + String.join(",", resultList));
 		}
 		return queryResults;
 	}
+
+	public ArrayList<String> getQueryResultsFIC(ResultSet res) throws SQLException {
+		
+		ArrayList<String> queryResults = new ArrayList<String>();
+		String[] resultList = new String[6];
+		String[] key = new String[2];
+		
+		while (res.next()) {
+            key[0] = res.getString("license_");
+            key[1] = res.getString("aka_name");
+            //key[2] = res.getString("inspection_id");
+            //from main_buildings table 
+            resultList[0] = res.getString("dba_name");
+            resultList[1] = res.getString("address");
+            resultList[2] = res.getString("city");
+            resultList[3] = res.getString("state");
+            resultList[4] = res.getString("zip");
+            //from facilities table
+            resultList[5] = res.getString("facility_type");
+//            //from inspections table
+//            resultList[1] = res.getString("inspection_date");
+//            resultList[2] = res.getString("inspection_type");
+//            resultList[3] = res.getString("risk");
+//            resultList[4] = res.getString("results");
+            
+  
+            queryResults.add(String.join("/", key) + "," + String.join(",", resultList));
+		}
+		return queryResults;
+	}
+
+	public ArrayList<String> getQueryResultsLobbyists(ResultSet res) throws SQLException {
+		
+		ArrayList<String> queryResults = new ArrayList<String>();
+		String[] resultList = new String[26];
+		String[] key = new String[3];
+		
+		while (res.next()) {
+			key[0] = res.getString("lobbyist_id");
+			key[1] = res.getString("lobbying_activity_id");
+//			key[1] = res.getString("gift_id");
+//			key[1] = res.getString("employer_id");
+//			key[1] = res.getString("contribution_id");
+//			key[1] = res.getString("compensation_id"); 
+            key[2] = res.getString("client_id");
+
+//            //from clients table
+            resultList[0] = res.getString("name");
+            resultList[1] = res.getString("address_1");
+            resultList[2] = res.getString("address_2");
+            resultList[3] = res.getString("city");
+            resultList[4] = res.getString("state");
+            resultList[5] = res.getString("zip");
+            resultList[6] = res.getString("country");
+            resultList[7] = res.getString("created_date");
+            resultList[8] = res.getString("active");
+			
+//			//from compensations table
+//			resultList[0] = res.getString("period_start");
+//			resultList[1] = res.getString("period_end");
+//			resultList[2] = res.getString("compensation_amount");
+//			resultList[13] = res.getString("client_id");
+			
+//			//from contributions table
+//			resultList[0] = res.getString("contribution_date");
+//			resultList[1] = res.getString("recipient");
+//			resultList[2] = res.getString("amount");
+			
+			//from employer table
+//			resultList[0] = res.getString("name");
+//			resultList[1] = res.getString("address_1");
+//			resultList[2] = res.getString("address_2");
+//			resultList[3] = res.getString("city");
+//			resultList[4] = res.getString("state");
+//			resultList[5] = res.getString("zip");
+//			resultList[6] = res.getString("country");
+//			resultList[7] = res.getString("active");
+			
+			//from gifts table
+//			resultList[0] = res.getString("period_start");
+//			resultList[1] = res.getString("period_end");
+//			resultList[2] = res.getString("gift");
+//			resultList[3] = res.getString("recipient_first_name");
+//			resultList[4] = res.getString("recipient_last_name");
+//			resultList[5] = res.getString("recipient_title");
+//			resultList[6] = res.getString("value");
+//			resultList[7] = res.getString("department");
+//			resultList[8] = res.getString("lobbyist_id");
+			
+//			//from lobbying activities table
+			resultList[9] = res.getString("period_start");
+			resultList[10] = res.getString("period_end");
+			resultList[11] = res.getString("action");
+			resultList[12] = res.getString("action_sought");
+			resultList[13] = res.getString("department");
+			resultList[14] = res.getString("client_id");
+			resultList[15] = res.getString("lobbyist_id");
+			
+			//from lobbyists table
+			resultList[16] = res.getString("first_name");
+			resultList[17] = res.getString("last_name");
+			resultList[18] = res.getString("address_1");
+			resultList[19] = res.getString("address_2");
+			resultList[20] = res.getString("city");
+			resultList[21] = res.getString("state");
+			resultList[22] = res.getString("zip");
+			resultList[23] = res.getString("country");
+			resultList[24] = res.getString("employer_id");
+			resultList[25] = res.getString("year");
+
+			
+            queryResults.add(String.join("/", key) + "," + String.join(",", resultList));
+		}
+		return queryResults;
+	}
+
 }

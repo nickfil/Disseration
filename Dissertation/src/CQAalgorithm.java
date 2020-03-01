@@ -16,6 +16,11 @@ public class CQAalgorithm {
 	private static String username;
 	private static String password;
 	private static final String q_tcc = "SELECT * FROM locations as l, crashes as c WHERE l.street_name=c.street_name AND l.street_no=c.street_no AND l.street_direction=c.street_direction";
+	private static final String q_tcc_1 = "SELECT l.street_name, l.street_no, l.street_direction\n" + 
+										  "FROM locations as l, crashes as c WHERE l.street_name=c.street_name AND l.street_no=c.street_no AND l.street_direction=c.street_direction\n" + 
+										  "GROUP BY l.street_name, l.street_no, l.street_direction\n" + 
+										  "HAVING COUNT(*) > 1";
+	//private static final String q_fic = "SELECT * FROM " 
 	private static final String q1_1 = "SELECT * FROM public_experiment_q1_1_10_2_5.lineitem as lineitem, public_experiment_q1_1_10_2_5.partsupp as partsupp WHERE lineitem.l_suppkey = partsupp.ps_suppkey";
 	private static final String q1_2 = "SELECT * FROM public_experiment_q1_1_30_2_5.lineitem as lineitem, public_experiment_q1_1_30_2_5.partsupp as partsupp WHERE lineitem.l_suppkey = partsupp.ps_suppkey";
 	private static final String q1_3 = "SELECT * FROM public_experiment_q1_1_50_2_5.lineitem as lineitem, public_experiment_q1_1_50_2_5.partsupp as partsupp WHERE lineitem.l_suppkey = partsupp.ps_suppkey";
@@ -25,12 +30,12 @@ public class CQAalgorithm {
 	private static final String q3_1 = "SELECT * FROM public_experiment_q3_1_10_2_5.lineitem as lineitem, public_experiment_q3_1_10_2_5.orders as orders, public_experiment_q3_1_10_2_5.customer as customer, public_experiment_q3_1_10_2_5.partsupp as partsupp WHERE lineitem.l_orderkey = orders.o_orderkey AND orders.o_custkey = customer.c_custkey AND lineitem.l_suppkey = partsupp.ps_suppkey";
 	private static final String q3_2 = "SELECT * FROM public_experiment_q3_1_30_2_5.lineitem as lineitem, public_experiment_q3_1_30_2_5.orders as orders, public_experiment_q3_1_30_2_5.customer as customer, public_experiment_q3_1_30_2_5.partsupp as partsupp WHERE lineitem.l_orderkey = orders.o_orderkey AND orders.o_custkey = customer.c_custkey AND lineitem.l_suppkey = partsupp.ps_suppkey";
 	private static final String q3_3 = "SELECT * FROM public_experiment_q3_1_50_2_5.lineitem as lineitem, public_experiment_q3_1_50_2_5.orders as orders, public_experiment_q3_1_50_2_5.customer as customer, public_experiment_q3_1_50_2_5.partsupp as partsupp WHERE lineitem.l_orderkey = orders.o_orderkey AND orders.o_custkey = customer.c_custkey AND lineitem.l_suppkey = partsupp.ps_suppkey";
-	
+
 	public static void main(String args[]) throws SQLException, JSONException, IOException{	
-		
+
 		auth();	
-		SQLHandler database = new SQLHandler(username, password, "out3_3"); //initializing our database object
-		ResultSet rs = database.query(q3_3);
+		SQLHandler database = new SQLHandler(username, password, "traffic_crashes_chicago"); //initializing our database object
+		ResultSet rs = database.query("SELECT * FROM crashes limit 20000"); //("SELECT * FROM main_buildings as mb, facilities as f WHERE mb.license_ = f.license_ limit 150000");
 		ArrayList<String> databaseFirstInstance = database.getQueryResultsTCC(rs);
 		
 		analyzeDB(databaseFirstInstance);
@@ -39,15 +44,17 @@ public class CQAalgorithm {
 		ArrayList<String> nonViolating = new ArrayList<String>();
 		Set<String> dups = new HashSet<String>(getDuplicateKeys(databaseFirstInstance));
 		
-		for (String a : databaseFirstInstance) {
-			String primaryKey = a.split(",")[0];
-			if(dups.contains(primaryKey)) {
-				violating.add(a);
-			}
-			else {
-				nonViolating.add(a);
-			}
-		}
+//		for (String a : databaseFirstInstance) {
+//			String primaryKey = a.split(",")[0];
+//			if(dups.contains(primaryKey)) {
+//				violating.add(a);
+//			}
+//			else {
+//				nonViolating.add(a);
+//			}
+//		}
+//		
+//		System.out.println("-----------------------------");
 //		analyzeDB(violating);
 		
 		
@@ -83,13 +90,13 @@ public class CQAalgorithm {
 				currentInstance.remove(tupleToRemove); //update databaseInstance
 
 			}
-
 			currentQueryResults = queryTCC(currentInstance);
 			results = updateResultMap(currentQueryResults, results);
 
-			System.out.println("Iteration " + i + "/" + (int)n + " | Done in " + (System.currentTimeMillis()-iter)/1000 + "s");
+			System.out.println("Iteration " + i + "/" + (int)n + " | Done in " + (System.currentTimeMillis()-iter) + "s");
+
 		}
-		//printResults(results, n-1);
+		printResults(results, n-1);
 		System.out.println((System.currentTimeMillis()-timer)/1000);
 	}
 	
@@ -120,14 +127,13 @@ public class CQAalgorithm {
 				currentInstanceOfViolations = violatingConstraintTuples(currentInstanceOfViolations); //update constraint violations
 
 			}
-			
 			currentQueryResults = queryTCC(currentTotalInstance);
 			results = updateResultMap(currentQueryResults, results);
 
 			System.out.println("Iteration " + i + "/" + (int)n + " | Done in " + (System.currentTimeMillis()-iter)/1000 + "s");
 		}
 		printResults(results, n-1);
-		System.out.println((System.currentTimeMillis()-timer)/1000);
+		System.out.println("Done in: " + (System.currentTimeMillis()-timer) + "s");
 	}
 
 	public static void auth() throws JSONException, IOException {
@@ -245,6 +251,7 @@ public class CQAalgorithm {
 			test.add(key);
 		}
 		System.out.println("Total unique keys: " + test.size());
+		test.clear();
 		
 		Map<String, Integer> groups = new HashMap<String, Integer>();
 		for(String s : db) {
@@ -270,9 +277,10 @@ public class CQAalgorithm {
 			}
 		}
 
-		System.out.println("Total keys with group>1: " + multiple);
 		System.out.println("Total keys with group=1: " + single);
+		System.out.println("Total keys with group>1: " + multiple);
 		System.out.println("Average group size: " + Double.valueOf(groupedCount/multiple));
+		groups.clear();
 		
 	}
 
