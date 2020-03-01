@@ -259,8 +259,8 @@ public class SQLHandler {
             resultList[17] = res.getString("injuries_reported_not_evident");
             resultList[18] = res.getString("injuries_no_indication");
             resultList[19] = res.getString("injuries_unknown");
-//            resultList[20] = res.getString("latitude");
-//            resultList[11] = res.getString("longitude");
+            resultList[20] = res.getString("latitude");
+            resultList[11] = res.getString("longitude");
 
   
             queryResults.add(String.join("/", key) + "," + String.join(",", resultList));
