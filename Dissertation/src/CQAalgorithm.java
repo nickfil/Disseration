@@ -19,7 +19,7 @@ public class CQAalgorithm {
 	private static final String q_tcc_1 = "SELECT l.street_name, l.street_no, l.street_direction\n" + 
 										  "FROM locations as l, crashes as c WHERE l.street_name=c.street_name AND l.street_no=c.street_no AND l.street_direction=c.street_direction\n" + 
 										  "GROUP BY l.street_name, l.street_no, l.street_direction\n" + 
-										  "HAVING COUNT(*) > 1";
+										  "HAVING COUNT(*) = 1";
 	//private static final String q_fic = "SELECT * FROM " 
 //	private static final String q1_1 = "SELECT * FROM public_experiment_q1_1_10_2_5.lineitem as lineitem, public_experiment_q1_1_10_2_5.partsupp as partsupp WHERE lineitem.l_suppkey = partsupp.ps_suppkey";
 //	private static final String q1_2 = "SELECT * FROM public_experiment_q1_1_30_2_5.lineitem as lineitem, public_experiment_q1_1_30_2_5.partsupp as partsupp WHERE lineitem.l_suppkey = partsupp.ps_suppkey";
@@ -35,27 +35,27 @@ public class CQAalgorithm {
 
 		auth();	
 		SQLHandler database = new SQLHandler(username, password, "traffic_crashes_chicago"); //initializing our database object
-		ResultSet rs = database.query("SELECT * FROM crashes limit 20000"); //("SELECT * FROM main_buildings as mb, facilities as f WHERE mb.license_ = f.license_ limit 150000");
+		ResultSet rs = database.query(q_tcc); //("SELECT * FROM main_buildings as mb, facilities as f WHERE mb.license_ = f.license_ limit 150000");
 		ArrayList<String> databaseFirstInstance = database.getQueryResultsTCC(rs);
 		
-		analyzeDB(databaseFirstInstance);
+		//analyzeDB(databaseFirstInstance);
 
 		ArrayList<String> violating = new ArrayList<String>();
 		ArrayList<String> nonViolating = new ArrayList<String>();
 		Set<String> dups = new HashSet<String>(getDuplicateKeys(databaseFirstInstance));
 		
-//		for (String a : databaseFirstInstance) {
-//			String primaryKey = a.split(",")[0];
-//			if(dups.contains(primaryKey)) {
-//				violating.add(a);
-//			}
-//			else {
-//				nonViolating.add(a);
-//			}
-//		}
-//		
-//		System.out.println("-----------------------------");
-//		analyzeDB(violating);
+		for (String a : databaseFirstInstance) {
+			String primaryKey = a.split(",")[0];
+			if(dups.contains(primaryKey)) {
+				violating.add(a);
+			}
+			else {
+				nonViolating.add(a);
+			}
+		}
+		
+		System.out.println("-----------------------------");
+		//analyzeDB(violating);
 		
 		
 		double lamda = 0.75;
@@ -63,7 +63,7 @@ public class CQAalgorithm {
 		double n = (1/(2*Math.pow(epsilon, 2.0))) * Math.log(2/lamda);
 		
 		//original_CQA((int)n, databaseFirstInstance);
-		//optimised_CQA((int)n, violating, nonViolating);
+		optimised_CQA((int)n, violating, nonViolating);
 
 	}
 	
@@ -116,7 +116,7 @@ public class CQAalgorithm {
 			
 			//while the instance is inconsistent
 			while(isInconsistent(currentInstanceOfViolations)) {
-				
+				//System.out.println(currentInstanceOfViolations.size());
 				tupleToRemove = currentInstanceOfViolations.get(rand.nextInt(currentInstanceOfViolations.size())); //choose one of the violations with prop 1/constraintViolating.length
 
 				currentInstanceOfViolations.remove(tupleToRemove); //update databaseInstance
@@ -128,12 +128,12 @@ public class CQAalgorithm {
 
 			}
 			currentQueryResults = queryTCC(currentTotalInstance);
-			results = updateResultMap(currentQueryResults, results);
+			//results = updateResultMap(currentQueryResults, results);
 
 			System.out.println("Iteration " + i + "/" + (int)n + " | Done in " + (System.currentTimeMillis()-iter)/1000 + "s");
 		}
-		printResults(results, n-1);
-		System.out.println("Done in: " + (System.currentTimeMillis()-timer) + "s");
+		//printResults(results, n-1);
+		System.out.println("Done in: " + (System.currentTimeMillis()-timer)/1000 + "s");
 	}
 
 	public static void auth() throws JSONException, IOException {
@@ -288,8 +288,9 @@ public class CQAalgorithm {
 		ArrayList<String> ret = new ArrayList<String>();
 		
 		for(String entry : db) {
-			String q = entry.split(",")[10].trim();
-			if(q.equals("DRY")) {
+			String q1 = entry.split(",")[18];
+			//String q2 = entry.split(",")[3];
+			if(q1.equals("0")) {// && q2.equals("ROAD CONSTRUCTION/MAINTENANCE")) {
 				ret.add(entry);
 			}
 		}

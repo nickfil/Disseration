@@ -25,7 +25,7 @@ public class RandomQueryGenerator {
 		ArrayList<String> keysForeignKeys = new ArrayList<String>(Arrays.asList(keysForeignKeysArray));
 		int number = 2; //number of joins
 		int filters = 2; //number of filters
-		int numberOfQueries = 5; //number of queries
+		int numberOfQueries = 10; //number of queries
 
 		auth();
 		SQLHandler database = new SQLHandler(username, password, "traffic_crashes_chicago"); //initializing our database object
