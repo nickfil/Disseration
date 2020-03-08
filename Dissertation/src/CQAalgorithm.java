@@ -42,11 +42,11 @@ public class CQAalgorithm {
 
 		ArrayList<String> violating = new ArrayList<String>();
 		ArrayList<String> nonViolating = new ArrayList<String>();
-		Set<String> dups = new HashSet<String>(getDuplicateKeys(databaseFirstInstance));
+		Map<String, Integer> multipleEntries = new HashMap<String, Integer>(getDuplicateKeys(databaseFirstInstance));
 		
 		for (String a : databaseFirstInstance) {
 			String primaryKey = a.split(",")[0];
-			if(dups.contains(primaryKey)) {
+			if(multipleEntries.containsKey(primaryKey)) {
 				violating.add(a);
 			}
 			else {
@@ -54,7 +54,7 @@ public class CQAalgorithm {
 			}
 		}
 		
-		System.out.println("-----------------------------");
+		System.out.println("----------------------");
 		//analyzeDB(violating);
 		
 		
@@ -63,46 +63,47 @@ public class CQAalgorithm {
 		double n = (1/(2*Math.pow(epsilon, 2.0))) * Math.log(2/lamda);
 		
 		//original_CQA((int)n, databaseFirstInstance);
-		optimised_CQA((int)n, violating, nonViolating);
+		optimised_CQA((int)n, violating, nonViolating, multipleEntries);
 
 	}
 	
-	public static void original_CQA(int n, ArrayList<String> db) {
-		ArrayList<String> constraintViolating = new ArrayList<String>();
+//	public static void original_CQA(int n, ArrayList<String> db) {
+//		ArrayList<String> constraintViolating = new ArrayList<String>();
+//		String tupleToRemove = null;
+//		Random rand = new Random();
+//		ArrayList<String> currentQueryResults = new ArrayList<String>();
+//		Map<String, Integer> results = new HashMap<String, Integer>();
+//
+//		long timer = System.currentTimeMillis();
+//		
+//		for(int i=1; i<=n; i++) {
+//			ArrayList<String> currentInstance = new ArrayList<String>(db);
+//			long iter = System.currentTimeMillis();
+//
+//			//while the instance is inconsistent
+//			while(isInconsistent(currentInstance)) {
+//
+//				constraintViolating = violatingConstraintTuples(currentInstance); //get an ArrayList<String> of all inconsistent tuples	
+//				
+//				tupleToRemove = constraintViolating.get(rand.nextInt(constraintViolating.size())); //choose one of the violations with prop 1/constraintViolating.length
+//
+//				currentInstance.remove(tupleToRemove); //update databaseInstance
+//
+//			}
+//			currentQueryResults = queryTCC(currentInstance);
+//			results = updateResultMap(currentQueryResults, results);
+//
+//			System.out.println("Iteration " + i + "/" + (int)n + " | Done in " + (System.currentTimeMillis()-iter) + "s");
+//
+//		}
+//		printResults(results, n-1);
+//		System.out.println((System.currentTimeMillis()-timer)/1000);
+//	}
+//	
+	public static void optimised_CQA(int n, ArrayList<String> violating, ArrayList<String> nonViolating, Map<String, Integer> multipleEntries) {
 		String tupleToRemove = null;
 		Random rand = new Random();
-		ArrayList<String> currentQueryResults = new ArrayList<String>();
-		Map<String, Integer> results = new HashMap<String, Integer>();
-
-		long timer = System.currentTimeMillis();
-		
-		for(int i=1; i<=n; i++) {
-			ArrayList<String> currentInstance = new ArrayList<String>(db);
-			long iter = System.currentTimeMillis();
-
-			//while the instance is inconsistent
-			while(isInconsistent(currentInstance)) {
-
-				constraintViolating = violatingConstraintTuples(currentInstance); //get an ArrayList<String> of all inconsistent tuples	
-				
-				tupleToRemove = constraintViolating.get(rand.nextInt(constraintViolating.size())); //choose one of the violations with prop 1/constraintViolating.length
-
-				currentInstance.remove(tupleToRemove); //update databaseInstance
-
-			}
-			currentQueryResults = queryTCC(currentInstance);
-			results = updateResultMap(currentQueryResults, results);
-
-			System.out.println("Iteration " + i + "/" + (int)n + " | Done in " + (System.currentTimeMillis()-iter) + "s");
-
-		}
-		printResults(results, n-1);
-		System.out.println((System.currentTimeMillis()-timer)/1000);
-	}
-	
-	public static void optimised_CQA(int n, ArrayList<String> violating, ArrayList<String> nonViolating) {
-		String tupleToRemove = null;
-		Random rand = new Random();
+		String tup = "";
 		ArrayList<String> currentQueryResults = new ArrayList<String>();
 		Map<String, Integer> results = new HashMap<String, Integer>();
 		
@@ -111,21 +112,27 @@ public class CQAalgorithm {
 		for(int i=0; i<n; i++) {
 			ArrayList<String> currentTotalInstance = new ArrayList<String>(nonViolating);
 			ArrayList<String> currentInstanceOfViolations = new ArrayList<String>(violating);
+			Map<String, Integer> multipleEntriesTemp = new HashMap<String, Integer>(multipleEntries);
 			
 			long iter = System.currentTimeMillis();
 			
 			//while the instance is inconsistent
 			while(isInconsistent(currentInstanceOfViolations)) {
-				//System.out.println(currentInstanceOfViolations.size());
-				tupleToRemove = currentInstanceOfViolations.get(rand.nextInt(currentInstanceOfViolations.size())); //choose one of the violations with prop 1/constraintViolating.length
-
-				currentInstanceOfViolations.remove(tupleToRemove); //update databaseInstance
-								
-				String tup = nonViolatingConstraintTuple(currentInstanceOfViolations); //add non violating tuple if constraint has been totally removed
-				if(!tup.equals("")) { currentTotalInstance.add(tup); }
 				
-				currentInstanceOfViolations = violatingConstraintTuples(currentInstanceOfViolations); //update constraint violations
-
+				tupleToRemove = currentInstanceOfViolations.get(rand.nextInt(currentInstanceOfViolations.size())); //choose one of the violations with prop 1/constraintViolating.length
+				
+				currentInstanceOfViolations.remove(tupleToRemove); //update violating databaseInstance
+				
+				if(multipleEntriesTemp.get(tupleToRemove.split(",")[0])==2) {
+					tup = nonViolatingConstraintTuple(currentInstanceOfViolations, tupleToRemove); //getting tuple which is now consistent
+					currentTotalInstance.add(tup);
+					currentInstanceOfViolations.remove(tup);
+					multipleEntriesTemp.remove(tupleToRemove.split(",")[0]); //add non violating tuple if constraint has been totally removed
+				} 
+				else {
+					multipleEntriesTemp.put(tupleToRemove.split(",")[0], multipleEntriesTemp.get(tupleToRemove.split(",")[0])-1);
+				}
+				
 			}
 			currentQueryResults = queryTCC(currentTotalInstance);
 			//results = updateResultMap(currentQueryResults, results);
@@ -148,11 +155,12 @@ public class CQAalgorithm {
         
 	}
 
-	public static String nonViolatingConstraintTuple(ArrayList<String> subDB) {
-		Set<String> duplicates = new HashSet<String>(getDuplicateKeys(subDB));
+	
+	public static String nonViolatingConstraintTuple(ArrayList<String> subDB, String removedTuple) {
+		String key = removedTuple.split(",")[0];
 		
 		for(String each : subDB) {
-			if(!duplicates.contains(each.split(",")[0])) {
+			if(each.split(",")[0].equals(key)) {
 				return each;
 			}
 		}
@@ -160,9 +168,9 @@ public class CQAalgorithm {
 		return "";
 	}
 	
-	public static Set<String> getDuplicateKeys(ArrayList<String> db){
+	public static Map<String, Integer> getDuplicateKeys(ArrayList<String> db){
 		Map<String, Integer> entries = new HashMap<String, Integer>();
-		Set<String> duplicatePrimaryKeys = new HashSet<String>();
+		Map<String, Integer> duplicatePrimaryKeysOnly = new HashMap<String, Integer>();
 		String primaryKey;
 		
 		for(String each : db) {
@@ -177,23 +185,22 @@ public class CQAalgorithm {
 		
 		for(String k : entries.keySet()) {
 			if(entries.get(k)>1) {
-				duplicatePrimaryKeys.add(k);
+				duplicatePrimaryKeysOnly.put(k, entries.get(k));
 			}
 		}
 		
-		return duplicatePrimaryKeys;
+		return duplicatePrimaryKeysOnly;
 	}
 	
 	//takes a database and returns all rows which violate the primary key constraint
-	public static ArrayList<String> violatingConstraintTuples(ArrayList<String> db){
+	public static ArrayList<String> violatingConstraintTuples(ArrayList<String> db, Map<String, Integer> duplicateKeys){
 
 		ArrayList<String> violations = new ArrayList<String>();
-		Set<String> duplicateKeys = new HashSet<String>(getDuplicateKeys(db));
 		String primaryKey;
 		
 		for(String tuple : db) {
 			primaryKey = tuple.split(",")[0];
-			if(duplicateKeys.contains(primaryKey)) {
+			if(duplicateKeys.containsKey(primaryKey)) {
 				violations.add(tuple);
 			}
 		}
