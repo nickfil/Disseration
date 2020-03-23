@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -14,11 +15,14 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.rits.cloning.Cloner;
+
 public class CQAalgorithm {
 	private static String username;
 	private static String password;
 	private static final String q_tcc = "SELECT * FROM locations as l, crashes as c WHERE l.street_name=c.street_name AND l.street_no=c.street_no AND l.street_direction=c.street_direction";
 	private static final String q_lob = "SELECT * FROM lobbyists";
+	static Cloner cloner=new Cloner();
 	//private static final String q_fic = "SELECT * FROM "
 //	private static final String q1_1 = "SELECT * FROM public_experiment_q1_1_10_2_5.lineitem as lineitem, public_experiment_q1_1_10_2_5.partsupp as partsupp WHERE lineitem.l_suppkey = partsupp.ps_suppkey";
 //	private static final String q1_2 = "SELECT * FROM public_experiment_q1_1_30_2_5.lineitem as lineitem, public_experiment_q1_1_30_2_5.partsupp as partsupp WHERE lineitem.l_suppkey = partsupp.ps_suppkey";
@@ -33,12 +37,15 @@ public class CQAalgorithm {
 	public static void main(String args[]) throws SQLException, JSONException, IOException{
 
 		auth();
-		SQLHandler database = new SQLHandler(username, password, "lobbyists_db"); //initializing our database object
-		ResultSet rs = database.query(q_lob); //("SELECT * FROM main_buildings as mb, facilities as f WHERE mb.license_ = f.license_ limit 150000");
-		ArrayList<String> databaseFirstInstance = database.getQueryResultsLobbyists(rs);
+		SQLHandler database = new SQLHandler(username, password, "traffic_crashes_chicago"); //initializing our database object
+		ResultSet rs = database.query(q_tcc); //("SELECT * FROM main_buildings as mb, facilities as f WHERE mb.license_ = f.license_ limit 150000");
+		//ArrayList<String> databaseFirstInstance = database.getQueryResultsLobbyists(rs);
+		ArrayList<String> databaseFirstInstance = database.getQueryResultsTCC(rs);
 
-		//analyzeDB(databaseFirstInstance);
+		analyzeDB(databaseFirstInstance);
 
+		HashMap<String, ArrayList<String>> violatingMap = new HashMap<String, ArrayList<String>>();
+		ArrayList<String> addition = new ArrayList<String>();
 		ArrayList<String> violating = new ArrayList<String>();
 		ArrayList<String> nonViolating = new ArrayList<String>();
 		Map<String, Integer> multipleEntries = new HashMap<String, Integer>(getDuplicateKeys(databaseFirstInstance));
@@ -46,8 +53,14 @@ public class CQAalgorithm {
 
 		for (String a : databaseFirstInstance) {
 			String primaryKey = a.split(",")[0];
+			String value = a.substring(primaryKey.length()+1);
 			if(multipleEntries.containsKey(primaryKey)) {
 				violating.add(a);
+
+				if(violatingMap.containsKey(primaryKey))
+				  violatingMap.get(primaryKey).add(value);
+				else
+				   violatingMap.put(primaryKey, new ArrayList<String>(Arrays.asList(value)));
 			}
 			else {
 				nonViolating.add(a);
@@ -63,8 +76,8 @@ public class CQAalgorithm {
 		double n = (1/(2*Math.pow(epsilon, 2.0))) * Math.log(2/lamda);
 
 		//original_CQA((int)n, databaseFirstInstance);
-		optimised_CQA(database, (int)n, violating, nonViolating, multipleEntries);
-
+		//optimised_CQA(database, (int)n, violating, nonViolating, multipleEntries);
+		more_optimised_CQA(database, (int)n, violatingMap, nonViolating);
 	}
 
 	public static void original_CQA(int n, ArrayList<String> db) {
@@ -99,7 +112,6 @@ public class CQAalgorithm {
 		printResults(results, n-1);
 		System.out.println((System.currentTimeMillis()-timer)/1000);
 	}
-
 
 	public static void optimised_CQA(SQLHandler s, int n, ArrayList<String> violating, ArrayList<String> nonViolating, Map<String, Integer> multipleEntries) throws SQLException {
 		String tupleToRemove = null;
@@ -146,6 +158,70 @@ public class CQAalgorithm {
 		System.out.println("Done in: " + (System.currentTimeMillis()-timer)/1000 + "s");
 	}
 
+	public static void more_optimised_CQA(SQLHandler s, int n, HashMap<String,ArrayList<String>> violating, ArrayList<String> nonViolating) throws SQLException {
+      String tupleToRemove = null;
+      String currentKey = null;
+      String currentValue = null;
+      ArrayList<String> currentQueryResults = new ArrayList<String>();
+      Map<String, Integer> results = new HashMap<String, Integer>();
+
+      long timer = System.currentTimeMillis();
+
+      for(int i=0; i<n; i++) {
+         ArrayList<String> currentTotalInstance = new ArrayList<String>(nonViolating);
+         ArrayList<String> removals = new ArrayList<String>();
+         HashMap<String, ArrayList<String>> currentInstanceOfViolations = cloner.deepClone(violating);
+
+         long iter = System.currentTimeMillis();
+
+         //while the instance is inconsistent
+         while(!currentInstanceOfViolations.isEmpty()) {
+
+            tupleToRemove = pickRandomHashmapValue(currentInstanceOfViolations); //remove a random tuple
+            currentKey = tupleToRemove.split("@")[0];
+            currentValue = tupleToRemove.split("@")[1];
+
+            currentInstanceOfViolations.get(currentKey).remove(currentValue); //remove tuple from violation set
+            removals.add(currentKey + "," + currentValue); //add tuple to the ones to be removed
+
+            if(currentInstanceOfViolations.get(currentKey).size()==1) { //if the violation has been removed, we need to also remove it from the set of violations
+               currentTotalInstance.add(currentKey + "," + currentInstanceOfViolations.get(currentKey).get(0));
+               currentInstanceOfViolations.remove(currentKey);
+            }
+
+         }
+
+         currentQueryResults = queryTCC(currentTotalInstance);
+         //results = updateResultMap(currentQueryResults, results);
+
+         System.out.println("Iteration " + i + "/" + n + " | Done in " + (System.currentTimeMillis()-iter)/1000 + "s");
+      }
+      //printResults(results, n-1);
+      System.out.println("Done in: " + (System.currentTimeMillis()-timer)/1000 + "s");
+   }
+
+	public static String pickRandomHashmapValue(HashMap<String, ArrayList<String>> map) {
+	   String val = "";
+      Random rand = new Random();
+      int r = rand.nextInt(map.keySet().size());
+      int index = 0;
+      String key = "";
+
+	   for(String k : map.keySet()) {
+	      if(index == r) {
+	         key = k;
+	         break;
+	      }
+	      index++;
+	   }
+
+	   r = rand.nextInt(map.get(key).size());
+
+	   val = key + "@" + map.get(key).get(r);
+
+	   return val;
+	}
+
 	public static void auth() throws JSONException, IOException {
 
 		BufferedReader reader = new BufferedReader(new FileReader("src/auth.json"));
@@ -157,7 +233,6 @@ public class CQAalgorithm {
 		password = array.getJSONObject(0).getString("password");
 
 	}
-
 
 	public static String nonViolatingConstraintTuple(ArrayList<String> subDB, String removedTuple) {
 		String key = removedTuple.split(",")[0];
@@ -340,4 +415,5 @@ public class CQAalgorithm {
 
       return ret;
    }
+
 }
