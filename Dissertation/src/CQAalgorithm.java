@@ -7,9 +7,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -34,7 +39,7 @@ public class CQAalgorithm {
 //	private static final String q3_2 = "SELECT * FROM public_experiment_q3_1_30_2_5.lineitem as lineitem, public_experiment_q3_1_30_2_5.orders as orders, public_experiment_q3_1_30_2_5.customer as customer, public_experiment_q3_1_30_2_5.partsupp as partsupp WHERE lineitem.l_orderkey = orders.o_orderkey AND orders.o_custkey = customer.c_custkey AND lineitem.l_suppkey = partsupp.ps_suppkey";
 //	private static final String q3_3 = "SELECT * FROM public_experiment_q3_1_50_2_5.lineitem as lineitem, public_experiment_q3_1_50_2_5.orders as orders, public_experiment_q3_1_50_2_5.customer as customer, public_experiment_q3_1_50_2_5.partsupp as partsupp WHERE lineitem.l_orderkey = orders.o_orderkey AND orders.o_custkey = customer.c_custkey AND lineitem.l_suppkey = partsupp.ps_suppkey";
 
-	public static void main(String args[]) throws SQLException, JSONException, IOException{
+	public static void main(String args[]) throws SQLException, JSONException, IOException, InterruptedException, ExecutionException{
 
 		auth();
 		SQLHandler database = new SQLHandler(username, password, "traffic_crashes_chicago"); //initializing our database object
@@ -42,7 +47,7 @@ public class CQAalgorithm {
 		//ArrayList<String> databaseFirstInstance = database.getQueryResultsLobbyists(rs);
 		ArrayList<String> databaseFirstInstance = database.getQueryResultsTCC(rs);
 
-		analyzeDB(databaseFirstInstance);
+		//analyzeDB(databaseFirstInstance);
 
 		HashMap<String, ArrayList<String>> violatingMap = new HashMap<String, ArrayList<String>>();
 		ArrayList<String> addition = new ArrayList<String>();
@@ -77,7 +82,64 @@ public class CQAalgorithm {
 
 		//original_CQA((int)n, databaseFirstInstance);
 		//optimised_CQA(database, (int)n, violating, nonViolating, multipleEntries);
-		more_optimised_CQA(database, (int)n, violatingMap, nonViolating);
+		//more_optimised_CQA(database, (int)n, violatingMap, nonViolating);
+		multithreaded_CQA(database, (int)n, violatingMap, nonViolating);
+	}
+
+	public static void multithreaded_CQA(SQLHandler s, int n, HashMap<String,ArrayList<String>> violating, ArrayList<String> nonViolating) throws SQLException, InterruptedException, ExecutionException {
+
+	   //System.out.println(Runtime.getRuntime().availableProcessors());
+	   ExecutorService service = Executors.newFixedThreadPool(6);
+	   Future<Map<String, Integer>> res = null;
+	   ArrayList<Future> aggregate = new ArrayList<Future>();
+
+	   long timer = System.currentTimeMillis();
+
+	   for(int i=0; i<=n; i++) {
+	      res = service.submit(new CQA_Multithreaded(s, violating, nonViolating));
+	      aggregate.add(res);
+	   }
+
+	   while(!res.isDone()) {
+	      //do nothing, just wait
+	   }
+
+	   System.out.println((System.currentTimeMillis()-timer));
+
+	}
+
+	public static Map<String, Integer> multithreaded_CQA_helper(SQLHandler s, HashMap<String,ArrayList<String>> violating, ArrayList<String> nonViolating){
+	   String tupleToRemove = null;
+      String currentKey = null;
+      String currentValue = null;
+      ArrayList<String> currentQueryResults = new ArrayList<String>();
+      Map<String, Integer> results = new HashMap<String, Integer>();
+
+      ArrayList<String> currentTotalInstance = new ArrayList<String>(nonViolating);
+      ArrayList<String> removals = new ArrayList<String>();
+      HashMap<String, ArrayList<String>> currentInstanceOfViolations = cloner.deepClone(violating);
+
+      //while the instance is inconsistent
+      while(!currentInstanceOfViolations.isEmpty()) {
+
+         tupleToRemove = pickRandomHashmapValue(currentInstanceOfViolations); //remove a random tuple
+         currentKey = tupleToRemove.split("@")[0];
+         currentValue = tupleToRemove.split("@")[1];
+
+         currentInstanceOfViolations.get(currentKey).remove(currentValue); //remove tuple from violation set
+         removals.add(currentKey + "," + currentValue); //add tuple to the ones to be removed
+
+         if(currentInstanceOfViolations.get(currentKey).size()==1) { //if the violation has been removed, we need to also remove it from the set of violations
+            currentTotalInstance.add(currentKey + "," + currentInstanceOfViolations.get(currentKey).get(0));
+            currentInstanceOfViolations.remove(currentKey);
+         }
+
+      }
+
+      currentQueryResults = queryTCC(currentTotalInstance);
+      results = updateResultMap(currentQueryResults, results);
+
+      return results;
 	}
 
 	public static void original_CQA(int n, ArrayList<String> db) {
@@ -194,7 +256,7 @@ public class CQAalgorithm {
          currentQueryResults = queryTCC(currentTotalInstance);
          //results = updateResultMap(currentQueryResults, results);
 
-         System.out.println("Iteration " + i + "/" + n + " | Done in " + (System.currentTimeMillis()-iter)/1000 + "s");
+         System.out.println("Iteration " + (i+1) + "/" + n + " | Done in " + (System.currentTimeMillis()-iter) + "ms");
       }
       //printResults(results, n-1);
       System.out.println("Done in: " + (System.currentTimeMillis()-timer)/1000 + "s");
@@ -203,19 +265,14 @@ public class CQAalgorithm {
 	public static String pickRandomHashmapValue(HashMap<String, ArrayList<String>> map) {
 	   String val = "";
       Random rand = new Random();
-      int r = rand.nextInt(map.keySet().size());
+      int r;
       int index = 0;
       String key = "";
 
-	   for(String k : map.keySet()) {
-	      if(index == r) {
-	         key = k;
-	         break;
-	      }
-	      index++;
-	   }
+      Iterator<String> value = map.keySet().iterator();
+      key = value.next();
 
-	   r = rand.nextInt(map.get(key).size());
+      r = rand.nextInt(map.get(key).size());
 
 	   val = key + "@" + map.get(key).get(r);
 
@@ -321,6 +378,23 @@ public class CQAalgorithm {
 		}
 		return returnMap;
 	}
+
+//	public static Callable<Map<String, Integer>> updateResultMapCallable(ArrayList<String> db, Callable<Map<String, Integer>> res){
+//      int temp;
+//      Callable<Map<String, Integer>> returnMap = new Callable(res);
+//
+//      for(String entry : db) {
+//         temp = 1;
+//         if(returnMap.containsKey(entry)) {
+//            temp = returnMap.get(entry)+1;
+//            returnMap.put(entry, temp);
+//         }
+//         else {
+//            returnMap.put(entry, 1);
+//         }
+//      }
+//      return returnMap;
+//   }
 
 	public static void printResults(Map<String, Integer> toPrint, double iterations) {
 		for(String item : toPrint.keySet()) {
