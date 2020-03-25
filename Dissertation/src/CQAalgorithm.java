@@ -50,7 +50,6 @@ public class CQAalgorithm {
 		//analyzeDB(databaseFirstInstance);
 
 		HashMap<String, ArrayList<String>> violatingMap = new HashMap<String, ArrayList<String>>();
-		ArrayList<String> addition = new ArrayList<String>();
 		ArrayList<String> violating = new ArrayList<String>();
 		ArrayList<String> nonViolating = new ArrayList<String>();
 		Map<String, Integer> multipleEntries = new HashMap<String, Integer>(getDuplicateKeys(databaseFirstInstance));
@@ -89,57 +88,32 @@ public class CQAalgorithm {
 	public static void multithreaded_CQA(SQLHandler s, int n, HashMap<String,ArrayList<String>> violating, ArrayList<String> nonViolating) throws SQLException, InterruptedException, ExecutionException {
 
 	   //System.out.println(Runtime.getRuntime().availableProcessors());
+	   String tupleOfInterest = "BYRON ST/4800/W/2019-04-04T10:34:00,30,STOP SIGN/FLASHER,FUNCTIONING PROPERLY,RAIN,DAYLIGHT,ANGLE,DIVIDED - W/MEDIAN (NOT RAISED),4,STRAIGHT AND LEVEL,WET,NO DEFECTS,-87.747394493,FAILING TO REDUCE SPEED TO AVOID CRASH,FAILING TO YIELD RIGHT-OF-WAY,0,0,0,1,2,0,41.951680612,null";
+	   int occurences = 0;
 	   ExecutorService service = Executors.newFixedThreadPool(6);
 	   Future<Map<String, Integer>> res = null;
-	   ArrayList<Future> aggregate = new ArrayList<Future>();
+	   ArrayList<Future<Map<String, Integer>>> aggregate = new ArrayList<Future<Map<String, Integer>>>();
 
 	   long timer = System.currentTimeMillis();
 
-	   for(int i=0; i<=n; i++) {
-	      res = service.submit(new CQA_Multithreaded(s, violating, nonViolating));
+	   for(int i=0; i<n; i++) {
+	      res = service.submit(new CQA_Multithreaded(s, violating, nonViolating, tupleOfInterest));
 	      aggregate.add(res);
 	   }
 
-	   while(!res.isDone()) {
-	      //do nothing, just wait
+	   while(!res.isDone()) { /*do nothing, just wait*/ }
+
+	   for(Future<Map<String, Integer>> map : aggregate) {
+	      for(String k : map.get().keySet()) {
+	         if(k.equals(tupleOfInterest))
+	            occurences++;
+	      }
 	   }
 
+	   //System.out.println(tupleOfInterest + " | " + (Double.valueOf(occurences)/Double.valueOf(n)));
 	   System.out.println((System.currentTimeMillis()-timer));
 
-	}
-
-	public static Map<String, Integer> multithreaded_CQA_helper(SQLHandler s, HashMap<String,ArrayList<String>> violating, ArrayList<String> nonViolating){
-	   String tupleToRemove = null;
-      String currentKey = null;
-      String currentValue = null;
-      ArrayList<String> currentQueryResults = new ArrayList<String>();
-      Map<String, Integer> results = new HashMap<String, Integer>();
-
-      ArrayList<String> currentTotalInstance = new ArrayList<String>(nonViolating);
-      ArrayList<String> removals = new ArrayList<String>();
-      HashMap<String, ArrayList<String>> currentInstanceOfViolations = cloner.deepClone(violating);
-
-      //while the instance is inconsistent
-      while(!currentInstanceOfViolations.isEmpty()) {
-
-         tupleToRemove = pickRandomHashmapValue(currentInstanceOfViolations); //remove a random tuple
-         currentKey = tupleToRemove.split("@")[0];
-         currentValue = tupleToRemove.split("@")[1];
-
-         currentInstanceOfViolations.get(currentKey).remove(currentValue); //remove tuple from violation set
-         removals.add(currentKey + "," + currentValue); //add tuple to the ones to be removed
-
-         if(currentInstanceOfViolations.get(currentKey).size()==1) { //if the violation has been removed, we need to also remove it from the set of violations
-            currentTotalInstance.add(currentKey + "," + currentInstanceOfViolations.get(currentKey).get(0));
-            currentInstanceOfViolations.remove(currentKey);
-         }
-
-      }
-
-      currentQueryResults = queryTCC(currentTotalInstance);
-      results = updateResultMap(currentQueryResults, results);
-
-      return results;
+	   service.shutdown();
 	}
 
 	public static void original_CQA(int n, ArrayList<String> db) {
@@ -378,23 +352,6 @@ public class CQAalgorithm {
 		}
 		return returnMap;
 	}
-
-//	public static Callable<Map<String, Integer>> updateResultMapCallable(ArrayList<String> db, Callable<Map<String, Integer>> res){
-//      int temp;
-//      Callable<Map<String, Integer>> returnMap = new Callable(res);
-//
-//      for(String entry : db) {
-//         temp = 1;
-//         if(returnMap.containsKey(entry)) {
-//            temp = returnMap.get(entry)+1;
-//            returnMap.put(entry, temp);
-//         }
-//         else {
-//            returnMap.put(entry, 1);
-//         }
-//      }
-//      return returnMap;
-//   }
 
 	public static void printResults(Map<String, Integer> toPrint, double iterations) {
 		for(String item : toPrint.keySet()) {

@@ -12,12 +12,14 @@ public class CQA_Multithreaded implements Callable<Map<String, Integer>>  {
    private static Cloner cloner = new Cloner();
    private SQLHandler s;
    private HashMap<String,ArrayList<String>> violating;
-   ArrayList<String> nonViolating;
+   private ArrayList<String> nonViolating;
+   private static String tuple;
 
-   public CQA_Multithreaded(SQLHandler s, HashMap<String,ArrayList<String>> violating, ArrayList<String> nonViolating) {
+   public CQA_Multithreaded(SQLHandler s, HashMap<String,ArrayList<String>> violating, ArrayList<String> nonViolating, String tuple) {
       this.s = s;
       this.violating = violating;
       this.nonViolating = nonViolating;
+      this.tuple = tuple;
    }
 
    @Override
@@ -54,7 +56,7 @@ public class CQA_Multithreaded implements Callable<Map<String, Integer>>  {
       }
 
       currentQueryResults = queryTCC(currentTotalInstance);
-      results = updateResultMap(currentQueryResults, results);
+      results = updateResultMap(currentQueryResults, tuple);
 
       return results;
    }
@@ -63,7 +65,6 @@ public class CQA_Multithreaded implements Callable<Map<String, Integer>>  {
       String val = "";
       Random rand = new Random();
       int r;
-      int index = 0;
       String key = "";
 
       Iterator<String> value = map.keySet().iterator();
@@ -76,19 +77,12 @@ public class CQA_Multithreaded implements Callable<Map<String, Integer>>  {
       return val;
    }
 
-   public static Map<String, Integer> updateResultMap(ArrayList<String> db, Map<String, Integer> res){
-      int temp;
-      Map<String, Integer> returnMap = new HashMap<String, Integer>(res);
+   public static Map<String, Integer> updateResultMap(ArrayList<String> qRes, String tup){
+      Map<String, Integer> returnMap = new HashMap<String, Integer>();
 
-      for(String entry : db) {
-         temp = 1;
-         if(returnMap.containsKey(entry)) {
-            temp = returnMap.get(entry)+1;
-            returnMap.put(entry, temp);
-         }
-         else {
+      for(String entry : qRes) {
+         if(entry.equals(tup))
             returnMap.put(entry, 1);
-         }
       }
       return returnMap;
    }
@@ -97,9 +91,9 @@ public class CQA_Multithreaded implements Callable<Map<String, Integer>>  {
       ArrayList<String> ret = new ArrayList<String>();
 
       for(String entry : db) {
-         String q1 = entry.split(",")[2];
+         String q1 = entry.split(",")[18];
          //String q2 = entry.split(",")[3];
-         if(q1.equals("STOP SIGN/FLASHER")) {// && q2.equals("ROAD CONSTRUCTION/MAINTENANCE")) {
+         if(q1.equals("8")) {// && q2.equals("ROAD CONSTRUCTION/MAINTENANCE")) {
             ret.add(entry);
          }
       }
