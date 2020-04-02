@@ -12,3 +12,4 @@ iii) Make sure you have a postgres server setup in port 5432 (otherwise specify 
 
 iv) Set your postgres credentials in the auth.json file
 
+Also please add this repository to your build path https://github.com/kostaskougios/cloning.
