@@ -1,3 +1,4 @@
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -55,8 +56,8 @@ public class CQA_Multithreaded implements Callable<Map<String, Integer>>  {
 
       }
 
-      currentQueryResults = queryTCC(currentTotalInstance);
-      results = updateResultMap(currentQueryResults, tuple);
+//      currentQueryResults = queryTCC(currentTotalInstance);
+//      results = updateResultMap(currentQueryResults, tuple);
 
       return results;
    }
@@ -97,6 +98,38 @@ public class CQA_Multithreaded implements Callable<Map<String, Integer>>  {
             ret.add(entry);
          }
       }
+
+      return ret;
+   }
+
+   public static ArrayList<String> queryLob(SQLHandler s, ArrayList<String> db) throws SQLException{
+      ArrayList<String> ret = new ArrayList<String>();
+      s.executeSQL("CREATE TABLE lobbyistsRepair AS TABLE lobbyists WITH NO DATA");
+      String temp = "";
+
+      for(String row : db) {
+         temp="";
+         if(row.split(",").length==11 && !row.contains("'")) {
+            for(String each : row.split(",")) {
+               temp+= "'" + each + "',";
+            }
+            temp = temp.substring(0, temp.length()-1);
+            //System.out.println(temp);
+            s.executeSQL("INSERT INTO lobbyistsRepair(lobbyist_id, first_name, last_name, address_1, address_2, city, state, zip, country, employer_id, year)  VALUES(" + temp + ")");
+         }
+     }
+
+      s.query("SELECT * FROM clients,contributions,employers,(select * from lobbyists except select * from lobbyistsrepair) as lobbyists\n" +
+               " WHERE contributions.lobbyist_id=lobbyists.lobbyist_id AND employers.employer_id=lobbyists.employer_id AND contribution_date='2017-06-29T00:00:00'");
+
+//      for(String entry : db) {
+//         String q1 = entry.split(",")[7];
+//         //String q2 = entry.split(",")[3];
+//         if(q1.equals("250")) {// && q2.equals("ROAD CONSTRUCTION/MAINTENANCE")) {
+//            ret.add(entry);
+//         }
+//      }
+      s.executeSQL("DROP TABLE lobbyistsRepair");
 
       return ret;
    }
