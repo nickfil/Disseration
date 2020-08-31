@@ -292,7 +292,6 @@ public class SQLHandler {
 		while (res.next()) {
             key[0] = res.getString("license_");
             key[1] = res.getString("aka_name");
-            //key[2] = res.getString("inspection_id");
             //from main_buildings table
             resultList[0] = res.getString("dba_name");
             resultList[1] = res.getString("address");
@@ -301,11 +300,7 @@ public class SQLHandler {
             resultList[4] = res.getString("zip");
             //from facilities table
             resultList[5] = res.getString("facility_type");
-//            //from inspections table
-//            resultList[1] = res.getString("inspection_date");
-//            resultList[2] = res.getString("inspection_type");
-//            resultList[3] = res.getString("risk");
-//            resultList[4] = res.getString("results");
+
 
 
             queryResults.add(String.join("/", key) + "," + String.join(",", resultList));
@@ -321,64 +316,6 @@ public class SQLHandler {
 
 		while (res.next()) {
 			key[0] = res.getString("lobbyist_id");
-//			key[1] = res.getString("lobbying_activity_id");
-//			key[2] = res.getString("gift_id");
-//			key[1] = res.getString("employer_id");
-//			key[1] = res.getString("contribution_id");
-//			key[2] = res.getString("compensation_id");
-//       key[2] = res.getString("client_id");
-
-//            //from clients table
-//            resultList[0] = res.getString("name");
-//            resultList[1] = res.getString("address_1");
-//            resultList[2] = res.getString("address_2");
-//            resultList[3] = res.getString("city");
-//            resultList[4] = res.getString("state");
-//            resultList[5] = res.getString("zip");
-//            resultList[6] = res.getString("country");
-//            resultList[7] = res.getString("created_date");
-//            resultList[8] = res.getString("active");
-
-//			//from compensations table
-//			resultList[0] = res.getString("period_start");
-//			resultList[1] = res.getString("period_end");
-//			resultList[2] = res.getString("compensation_amount");
-//			resultList[3] = res.getString("client_id");
-
-//			//from contributions table
-//			resultList[4] = res.getString("contribution_date");
-//			resultList[5] = res.getString("recipient");
-//			resultList[6] = res.getString("amount");
-
-			//from employer table
-//			resultList[0] = res.getString("name");
-//			resultList[1] = res.getString("address_1");
-//			resultList[2] = res.getString("address_2");
-//			resultList[3] = res.getString("city");
-//			resultList[4] = res.getString("state");
-//			resultList[5] = res.getString("zip");
-//			resultList[6] = res.getString("country");
-//			resultList[7] = res.getString("active");
-
-			//from gifts table
-//			resultList[17] = res.getString("period_start");
-//			resultList[18] = res.getString("period_end");
-//			resultList[19] = res.getString("gift");
-//			resultList[20] = res.getString("recipient_first_name");
-//			resultList[21] = res.getString("recipient_last_name");
-//			resultList[22] = res.getString("recipient_title");
-//			resultList[23] = res.getString("value");
-//			resultList[24] = res.getString("department");
-//			resultList[25] = res.getString("lobbyist_id");
-
-//			//from lobbying activities table
-//			resultList[0] = res.getString("period_start");
-//			resultList[1] = res.getString("period_end");
-//			resultList[2] = res.getString("action");
-//			resultList[3] = res.getString("action_sought");
-//			resultList[4] = res.getString("department");
-//			resultList[5] = res.getString("client_id");
-//			resultList[6] = res.getString("lobbyist_id");
 
 			//from lobbyists table
 			resultList[0] = res.getString("first_name");
