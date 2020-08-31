@@ -93,8 +93,7 @@ public class CQA_Multithreaded implements Callable<Map<String, Integer>>  {
 
       for(String entry : db) {
          String q1 = entry.split(",")[18];
-         //String q2 = entry.split(",")[3];
-         if(q1.equals("8")) {// && q2.equals("ROAD CONSTRUCTION/MAINTENANCE")) {
+         if(q1.equals("8")) {
             ret.add(entry);
          }
       }
@@ -114,7 +113,6 @@ public class CQA_Multithreaded implements Callable<Map<String, Integer>>  {
                temp+= "'" + each + "',";
             }
             temp = temp.substring(0, temp.length()-1);
-            //System.out.println(temp);
             s.executeSQL("INSERT INTO lobbyistsRepair(lobbyist_id, first_name, last_name, address_1, address_2, city, state, zip, country, employer_id, year)  VALUES(" + temp + ")");
          }
      }
