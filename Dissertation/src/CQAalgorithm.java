@@ -28,22 +28,13 @@ public class CQAalgorithm {
 	private static final String q_tcc = "SELECT * FROM locations as l, crashes as c WHERE l.street_name=c.street_name AND l.street_no=c.street_no AND l.street_direction=c.street_direction";
 	private static final String q_lob = "SELECT * FROM lobbyists";
 	static Cloner cloner=new Cloner();
-	//private static final String q_fic = "SELECT * FROM "
 	private static final String q1_1 = "SELECT * FROM public_experiment_q1_1_10_2_5.lineitem as lineitem, public_experiment_q1_1_10_2_5.partsupp as partsupp WHERE lineitem.l_suppkey = partsupp.ps_suppkey";
-//	private static final String q1_2 = "SELECT * FROM public_experiment_q1_1_30_2_5.lineitem as lineitem, public_experiment_q1_1_30_2_5.partsupp as partsupp WHERE lineitem.l_suppkey = partsupp.ps_suppkey";
-//	private static final String q1_3 = "SELECT * FROM public_experiment_q1_1_50_2_5.lineitem as lineitem, public_experiment_q1_1_50_2_5.partsupp as partsupp WHERE lineitem.l_suppkey = partsupp.ps_suppkey";
-//	private static final String q2_1 = "SELECT * FROM public_experiment_q2_1_10_2_5.lineitem as lineitem, public_experiment_q2_1_10_2_5.partsupp as partsupp, public_experiment_q2_1_10_2_5.supplier as supplier WHERE lineitem.l_suppkey = partsupp.ps_suppkey AND partsupp.ps_suppkey = supplier.s_suppkey";
-//	private static final String q2_2 = "SELECT * FROM public_experiment_q2_1_30_2_5.lineitem as lineitem, public_experiment_q2_1_30_2_5.partsupp as partsupp, public_experiment_q2_1_30_2_5.supplier as supplier WHERE lineitem.l_suppkey = partsupp.ps_suppkey AND partsupp.ps_suppkey = supplier.s_suppkey";
-//	private static final String q2_3 = "SELECT * FROM public_experiment_q2_1_50_2_5.lineitem as lineitem, public_experiment_q2_1_50_2_5.partsupp as partsupp, public_experiment_q2_1_50_2_5.supplier as supplier WHERE lineitem.l_suppkey = partsupp.ps_suppkey AND partsupp.ps_suppkey = supplier.s_suppkey";
-//	private static final String q3_1 = "SELECT * FROM public_experiment_q3_1_10_2_5.lineitem as lineitem, public_experiment_q3_1_10_2_5.orders as orders, public_experiment_q3_1_10_2_5.customer as customer, public_experiment_q3_1_10_2_5.partsupp as partsupp WHERE lineitem.l_orderkey = orders.o_orderkey AND orders.o_custkey = customer.c_custkey AND lineitem.l_suppkey = partsupp.ps_suppkey";
-//	private static final String q3_2 = "SELECT * FROM public_experiment_q3_1_30_2_5.lineitem as lineitem, public_experiment_q3_1_30_2_5.orders as orders, public_experiment_q3_1_30_2_5.customer as customer, public_experiment_q3_1_30_2_5.partsupp as partsupp WHERE lineitem.l_orderkey = orders.o_orderkey AND orders.o_custkey = customer.c_custkey AND lineitem.l_suppkey = partsupp.ps_suppkey";
-//	private static final String q3_3 = "SELECT * FROM public_experiment_q3_1_50_2_5.lineitem as lineitem, public_experiment_q3_1_50_2_5.orders as orders, public_experiment_q3_1_50_2_5.customer as customer, public_experiment_q3_1_50_2_5.partsupp as partsupp WHERE lineitem.l_orderkey = orders.o_orderkey AND orders.o_custkey = customer.c_custkey AND lineitem.l_suppkey = partsupp.ps_suppkey";
 
 	public static void main(String args[]) throws SQLException, JSONException, IOException, InterruptedException, ExecutionException{
 
 		auth();
 		SQLHandler database = new SQLHandler(username, password, "out1_1"); //initializing our database object
-		ResultSet rs = database.query(q1_1); //("SELECT * FROM main_buildings as mb, facilities as f WHERE mb.license_ = f.license_ limit 150000");
+		ResultSet rs = database.query(q1_1); 
 		System.out.println("----------------------");
 		ArrayList<String> databaseFirstInstance = database.getQueryResults1(rs);
 		System.out.println("----------------------");
@@ -60,16 +51,12 @@ public class CQAalgorithm {
 			String primaryKey = a.split(",")[0];
 			String value = a.substring(primaryKey.length()+1);
 			if(multipleEntries.containsKey(primaryKey)) {
-				//violating.add(a);
 
 				if(violatingMap.containsKey(primaryKey))
 				  violatingMap.get(primaryKey).add(value);
 				else
 				   violatingMap.put(primaryKey, new ArrayList<String>(Arrays.asList(value)));
 			}
-//			else {
-//				nonViolating.add(a);
-//			}
 		}
 
 		System.out.println("----------------------");
@@ -111,7 +98,6 @@ public class CQAalgorithm {
 	      }
 	   }
 
-	   //System.out.println(tupleOfInterest + " | " + (Double.valueOf(occurences)/Double.valueOf(n)));
 	   System.out.println((System.currentTimeMillis()-timer));
 
 	   service.shutdown();
@@ -132,8 +118,6 @@ public class CQAalgorithm {
 
 			//while the instance is inconsistent
 			while(isInconsistent(currentInstance)) {
-
-				//constraintViolating = violatingConstraintTuples(currentInstance); //get an ArrayList<String> of all inconsistent tuples
 
 				tupleToRemove = constraintViolating.get(rand.nextInt(constraintViolating.size())); //choose one of the violations with prop 1/constraintViolating.length
 
@@ -169,7 +153,6 @@ public class CQAalgorithm {
 
 			//while the instance is inconsistent
 			while(isInconsistent(currentInstanceOfViolations)) {
-			   //System.out.println(currentInstanceOfViolations.size());
 				tupleToRemove = currentInstanceOfViolations.get(rand.nextInt(currentInstanceOfViolations.size())); //choose one of the violations with prop 1/constraintViolating.length
 
 				currentInstanceOfViolations.remove(tupleToRemove); //update violating databaseInstance
@@ -187,7 +170,7 @@ public class CQAalgorithm {
 			}
 
 			currentQueryResults = queryLob(s, currentTotalInstance);
-			//results = updateResultMap(currentQueryResults, results);
+			results = updateResultMap(currentQueryResults, results);
 
 			System.out.println("Iteration " + i + "/" + n + " | Done in " + (System.currentTimeMillis()-iter)/1000 + "s");
 		}
@@ -229,11 +212,10 @@ public class CQAalgorithm {
          }
 
          currentQueryResults = queryTCC(currentTotalInstance);
-         //results = updateResultMap(currentQueryResults, results);
+         results = updateResultMap(currentQueryResults, results);
 
          System.out.println("Iteration " + (i+1) + "/" + n + " | Done in " + (System.currentTimeMillis()-iter) + "ms");
       }
-      //printResults(results, n-1);
       System.out.println("Done in: " + (System.currentTimeMillis()-timer)/1000 + "s");
    }
 
@@ -428,7 +410,7 @@ public class CQAalgorithm {
                temp+= "'" + each + "',";
             }
             temp = temp.substring(0, temp.length()-1);
-            //System.out.println(temp);
+            
             s.executeSQL("INSERT INTO lobbyistsRepair(lobbyist_id, first_name, last_name, address_1, address_2, city, state, zip, country, employer_id, year)  VALUES(" + temp + ")");
          }
      }
@@ -436,13 +418,6 @@ public class CQAalgorithm {
       s.query("SELECT * FROM clients,contributions,employers,(select * from lobbyists except select * from lobbyistsrepair) as lobbyists\n" +
                " WHERE contributions.lobbyist_id=lobbyists.lobbyist_id AND employers.employer_id=lobbyists.employer_id AND contribution_date='2017-06-29T00:00:00'");
 
-//      for(String entry : db) {
-//         String q1 = entry.split(",")[7];
-//         //String q2 = entry.split(",")[3];
-//         if(q1.equals("250")) {// && q2.equals("ROAD CONSTRUCTION/MAINTENANCE")) {
-//            ret.add(entry);
-//         }
-//      }
       s.executeSQL("DROP TABLE lobbyistsRepair");
 
       return ret;
