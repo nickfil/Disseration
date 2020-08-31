@@ -122,13 +122,6 @@ public class CQA_Multithreaded implements Callable<Map<String, Integer>>  {
       s.query("SELECT * FROM clients,contributions,employers,(select * from lobbyists except select * from lobbyistsrepair) as lobbyists\n" +
                " WHERE contributions.lobbyist_id=lobbyists.lobbyist_id AND employers.employer_id=lobbyists.employer_id AND contribution_date='2017-06-29T00:00:00'");
 
-//      for(String entry : db) {
-//         String q1 = entry.split(",")[7];
-//         //String q2 = entry.split(",")[3];
-//         if(q1.equals("250")) {// && q2.equals("ROAD CONSTRUCTION/MAINTENANCE")) {
-//            ret.add(entry);
-//         }
-//      }
       s.executeSQL("DROP TABLE lobbyistsRepair");
 
       return ret;
